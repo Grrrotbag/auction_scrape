@@ -1,10 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
+import numpy as np
+import pandas as pd
 
-file_name = "auction_list.csv"
-f = csv.writer(open(file_name, 'w', newline=''))
-f.writerow(['Item', 'Price', 'Link'])
+result = []
 
 for x in range(1, 10):
     page = requests.get(
@@ -14,23 +14,26 @@ for x in range(1, 10):
 
     table = soup.find(class_='item-listing')
 
-    items = table.find_all('tr')
+    table_rows = table.find_all('tr')
 
     title_result = []
     price_result = []
     link_result = []
 
-    for item in items:
-        title = item.find_all('h3')
-        price = item.find_all('strong', {'style' : 'color: #00A'})
+    for row in table_rows:
+        title = row.find_all('h3')
+        price = row.find_all('strong', {'style' : 'color: #00A'})
         for t in title:
             link = t.parent.get('href')
             title_result.append(t.text[33:-33])
             link_result.append('https://www.euroauctionslive.com' + link)
         for p in price:
-            price_result.append(p.text[:-4])
+            price_result.append(
+                float(p.text[:-4].replace(',', '')))
 
-    result = list(zip(title_result, price_result, link_result))
+    page_result = list(zip(title_result, price_result, link_result))
+    result.extend(page_result)
 
-    for r in result:
-        f.writerow([r[0], r[1], r[2]])
+df = pd.DataFrame(result, columns=["Title", "Price", "Link"])
+print(df)
+df.to_excel('auction.xlsx', engine='xlsxwriter', index=None, header=True)
