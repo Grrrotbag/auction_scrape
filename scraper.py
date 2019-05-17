@@ -6,7 +6,7 @@ import pandas as pd
 
 result = []
 
-for x in range(1, 10):
+for x in range(1, 10):  # There are 9 pages of the desired auction, so do loop over overy page
     page = requests.get(
         'https://www.euroauctionslive.com/servlet/Search.do?auctionId=475&page=' + str(x) + '&perPage=100&orderBy=')
 
@@ -25,7 +25,7 @@ for x in range(1, 10):
         price = row.find_all('strong', {'style' : 'color: #00A'})
         for t in title:
             link = t.parent.get('href')
-            title_result.append(t.text[33:-33])
+            title_result.append(t.text[33:-33])  # Extremely hacky method of clearing \n etc.
             link_result.append('https://www.euroauctionslive.com' + link)
         for p in price:
             price_result.append(
